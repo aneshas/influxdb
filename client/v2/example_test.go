@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net/url"
 	"os"
 	"time"
 
@@ -13,15 +12,16 @@ import (
 
 // Create a new client
 func ExampleClient() {
-	u, _ := url.Parse("http://localhost:8086")
-
 	// NOTE: this assumes you've setup a user and have setup shell env variables,
 	// namely INFLUX_USER/INFLUX_PWD. If not just omit Username/Password below.
-	_ = client.NewClient(client.Config{
-		URL:      u,
+	_, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     "http://localhost:8086",
 		Username: os.Getenv("INFLUX_USER"),
 		Password: os.Getenv("INFLUX_PWD"),
 	})
+	if err != nil {
+		fmt.Println("Error creating InfluxDB Client: ", err.Error())
+	}
 }
 
 // Write a point using the UDP client
@@ -59,10 +59,12 @@ func ExampleClient_uDP() {
 // Write a point using the HTTP client
 func ExampleClient_write() {
 	// Make client
-	u, _ := url.Parse("http://localhost:8086")
-	c := client.NewClient(client.Config{
-		URL: u,
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: "http://localhost:8086",
 	})
+	if err != nil {
+		fmt.Println("Error creating InfluxDB Client: ", err.Error())
+	}
 	defer c.Close()
 
 	// Create a new point batch
@@ -164,11 +166,13 @@ func ExampleClient_write1000() {
 	sampleSize := 1000
 
 	// Make client
-	u, _ := url.Parse("http://localhost:8086")
-	clnt := client.NewClient(client.Config{
-		URL: u,
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: "http://localhost:8086",
 	})
-	defer clnt.Close()
+	if err != nil {
+		fmt.Println("Error creating InfluxDB Client: ", err.Error())
+	}
+	defer c.Close()
 
 	rand.Seed(42)
 
@@ -204,7 +208,7 @@ func ExampleClient_write1000() {
 		bp.AddPoint(pt)
 	}
 
-	err := clnt.Write(bp)
+	err = c.Write(bp)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -213,10 +217,12 @@ func ExampleClient_write1000() {
 // Make a Query
 func ExampleClient_query() {
 	// Make client
-	u, _ := url.Parse("http://localhost:8086")
-	c := client.NewClient(client.Config{
-		URL: u,
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: "http://localhost:8086",
 	})
+	if err != nil {
+		fmt.Println("Error creating InfluxDB Client: ", err.Error())
+	}
 	defer c.Close()
 
 	q := client.Query{
@@ -232,10 +238,12 @@ func ExampleClient_query() {
 // Create a Database with a query
 func ExampleClient_createDatabase() {
 	// Make client
-	u, _ := url.Parse("http://localhost:8086")
-	c := client.NewClient(client.Config{
-		URL: u,
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: "http://localhost:8086",
 	})
+	if err != nil {
+		fmt.Println("Error creating InfluxDB Client: ", err.Error())
+	}
 	defer c.Close()
 
 	q := client.Query{
